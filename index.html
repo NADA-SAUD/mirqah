@@ -9,9 +9,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="مِرقاة">
-<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="icon-16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
 <title>مِرقاة — متتبع النقاط الأكاديمي</title>
 <style>
 @font-face {
@@ -124,6 +124,7 @@
   .btn-danger-ghost:hover{ background:#fbe9ea; }
 
   /* ---------- Hero total ---------- */
+  .hero-block{ margin-bottom:18px; }
   .hero{
     background: linear-gradient(135deg, var(--teal-deep), var(--teal) 60%, #4f8a80);
     border-radius: var(--radius);
@@ -132,9 +133,9 @@
     display:flex; align-items:center; justify-content:space-between; gap:20px;
     box-shadow: var(--shadow);
     position:relative; overflow:hidden;
-    margin-bottom: 18px;
     flex-wrap:wrap;
   }
+  .hero-block.has-strip .hero{ border-radius: var(--radius) var(--radius) 0 0; box-shadow:none; }
   .hero::after{
     content:"";
     position:absolute; left:-40px; top:-60px; width:220px; height:220px; border-radius:50%;
@@ -142,19 +143,58 @@
   }
   .hero-greeting{ font-size:15px; font-weight:800; margin-bottom:6px; }
   .hero-label{ font-size:13.5px; opacity:.85; font-weight:500; margin-bottom:4px;}
+  .hero-subline{
+    font-size:13px; opacity:.9; font-weight:500; margin-bottom:8px;
+    display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+  }
+  .hero-dot{ width:3px; height:3px; border-radius:50%; background:rgba(255,255,255,.55); flex-shrink:0; }
+  .hero-subject{
+    display:inline-flex; align-items:center; font-weight:700; color:#fff;
+    background:rgba(255,255,255,.15); border-radius:100px; padding:3px 12px;
+    cursor:pointer; transition:background .15s ease;
+  }
+  .hero-subject:hover{ background:rgba(255,255,255,.22); }
+  .hero-subject.empty{
+    opacity:.7; font-weight:500; background:transparent;
+    border:1px dashed rgba(255,255,255,.4);
+  }
+  .hero-subject-input{
+    background:rgba(255,255,255,.16); border:1.5px dashed rgba(255,255,255,.5);
+    border-radius:100px; padding:3px 13px; font-size:12.5px; color:#fff;
+    font-family:inherit; min-width:170px; outline:none;
+  }
+  .hero-subject-input::placeholder{ color:rgba(255,255,255,.6); }
   .hero-num{ font-family:'ThmanyahSerifDisplay', serif; font-size:52px; font-weight:700; line-height:1; display:flex; align-items:baseline; gap:8px; }
   .hero-num span{ font-size:20px; font-family:'ThmanyahSans',sans-serif; opacity:.8; font-weight:500; }
   .hero-ring{ position:relative; width:108px; height:108px; flex-shrink:0; }
   .hero-ring-col{ display:flex; flex-direction:column; align-items:center; gap:9px; flex-shrink:0; }
-  .hero-compare{
-    font-size:11.5px; font-weight:700; text-align:center; max-width:210px; line-height:1.6;
-    color:#fff; background:rgba(255,255,255,.16); border-radius:10px; padding:7px 12px;
-    min-height:14px;
-  }
   .hero-ring svg{ transform: rotate(-90deg); }
   .hero-ring-pct{
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     font-weight:800; font-size:18px;
+  }
+
+  /* ---------- Comparison strip (collapsible) ---------- */
+  .compare-strip{
+    background:#fff; border-radius:0 0 16px 16px;
+    padding:13px 20px; display:flex; align-items:center; gap:10px;
+    box-shadow: var(--shadow);
+    border:1px solid rgba(63,111,104,.07); border-top:none;
+    cursor:pointer; user-select:none;
+  }
+  .compare-txt{ flex:1; font-size:13.5px; font-weight:700; color:var(--teal-deep); text-align:center; }
+  .compare-chevron{
+    font-size:12px; color:var(--ink-soft); transition:transform .2s ease; flex-shrink:0;
+  }
+  .compare-strip.expanded .compare-chevron{ transform:rotate(180deg); }
+  .compare-verse-panel{
+    background:var(--cream); border-radius:0 0 16px 16px; margin-top:-1px;
+    padding:26px 30px 30px; text-align:center;
+    border:1px solid rgba(63,111,104,.07); border-top:1px dashed var(--line);
+  }
+  .compare-verse{
+    font-size:15.5px; line-height:2.35; letter-spacing:1.6px;
+    color:var(--ink-soft); font-weight:500;
   }
 
   /* ---------- Category bars ---------- */
@@ -445,6 +485,21 @@
   .kanban-card .task-del:hover{ color:var(--warn); }
   .kanban-empty{ font-size:12px; color:var(--ink-soft); text-align:center; padding:14px 4px; }
 
+  /* Touch drag handle: a small grip mark, mouse users keep dragging the
+     whole card as before; touch users grab this handle specifically so the
+     rest of the card/column can still be scrolled normally with a finger. */
+  .drag-handle{
+    flex-shrink:0; width:22px; height:100%; min-height:20px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ink-soft); font-size:13px; letter-spacing:1px;
+    cursor:grab; touch-action:none; line-height:1;
+  }
+  .touch-drag-clone{
+    position:fixed; z-index:600; pointer-events:none;
+    opacity:.92; box-shadow:0 14px 28px rgba(40,30,30,.22);
+    transform-origin:center; border-radius:12px;
+  }
+
   /* ---------- Sidebar ---------- */
   .sidebar-overlay{
     position:fixed; inset:0; background:rgba(30,20,20,.35); z-index:150;
@@ -662,22 +717,37 @@
     </div>
   </div>
 
-  <div class="hero">
-    <div>
-      <div class="hero-greeting" id="heroGreeting"></div>
-      <div class="hero-label" id="heroMonthLabel">الشهر الحالي</div>
-      <div class="hero-num" id="heroNum">0 <span>/ 0 نقطة</span></div>
-    </div>
-    <div class="hero-ring-col">
-      <div class="hero-ring">
-        <svg width="108" height="108">
-          <circle cx="54" cy="54" r="46" stroke="rgba(255,255,255,.25)" stroke-width="10" fill="none"/>
-          <circle id="heroCircle" cx="54" cy="54" r="46" stroke="#fff" stroke-width="10" fill="none"
-            stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289"/>
-        </svg>
-        <div class="hero-ring-pct" id="heroPct">0%</div>
+  <div class="hero-block">
+    <div class="hero" id="heroCard">
+      <div>
+        <div class="hero-greeting" id="heroGreeting"></div>
+        <div class="hero-subline">
+          <span id="heroMonthLabel">الشهر الحالي</span>
+          <span class="hero-dot"></span>
+          <span class="hero-subject" id="heroSubject" onclick="startEditSubject()">＋ أضيفي مادة الشهر</span>
+          <input class="hero-subject-input" id="heroSubjectInput" style="display:none"
+            placeholder="اسم المادة أو عنوان الشهر"
+            onblur="saveSubject()" onkeydown="if(event.key==='Enter') this.blur()">
+        </div>
+        <div class="hero-num" id="heroNum">0 <span>/ 0 نقطة</span></div>
       </div>
-      <div class="hero-compare" id="heroCompare"></div>
+      <div class="hero-ring-col">
+        <div class="hero-ring">
+          <svg width="108" height="108">
+            <circle cx="54" cy="54" r="46" stroke="rgba(255,255,255,.25)" stroke-width="10" fill="none"/>
+            <circle id="heroCircle" cx="54" cy="54" r="46" stroke="#fff" stroke-width="10" fill="none"
+              stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="289"/>
+          </svg>
+          <div class="hero-ring-pct" id="heroPct">0%</div>
+        </div>
+      </div>
+    </div>
+    <div class="compare-strip no-print" id="compareStrip" onclick="toggleCompareExpand()" style="display:none;">
+      <span class="compare-txt" id="compareTxt"></span>
+      <span class="compare-chevron" id="compareChevron">⌄</span>
+    </div>
+    <div class="compare-verse-panel no-print" id="compareVersePanel" style="display:none;">
+      <div class="compare-verse" id="compareVerseTxt"></div>
     </div>
   </div>
 
@@ -1015,6 +1085,7 @@ function emptyWeek(){
 function emptyMonth(name){
   return {
     name: name,
+    subject: '',
     readingEnabled: true,
     summaryEnabled: true,
     tasksEnabled: true,
@@ -1131,19 +1202,84 @@ function getPreviousMonth(){
   if(idx <= 0) return null;
   return state.months[ids[idx-1]];
 }
+const COMPARE_WORDING = {
+  higher: 'خطوتِ إلى الأمام عن الشهر الماضي',
+  equal:  'حافظتِ على وتيرتكِ ذاتها',
+  lower:  'تراجع أداؤكِ قليلًا عن الشهر الماضي'
+};
+let compareExpanded = false;
+function toggleCompareExpand(){
+  compareExpanded = !compareExpanded;
+  document.getElementById('compareStrip').classList.toggle('expanded', compareExpanded);
+  document.getElementById('compareVersePanel').style.display = compareExpanded ? '' : 'none';
+}
 function renderCompare(currentPct){
-  const el = document.getElementById('heroCompare');
+  const heroBlock = document.getElementById('heroCard').closest('.hero-block');
+  const strip = document.getElementById('compareStrip');
+  const panel = document.getElementById('compareVersePanel');
   const prev = getPreviousMonth();
-  if(!prev){ el.innerHTML=''; el.style.opacity=0; return; }
-  el.style.opacity=1;
-  const prevPct = Math.round((monthScore(prev)/monthMax(prev))*100);
-  if(currentPct > prevPct){
-    el.innerHTML = COMPARE_PHRASES.higher[comparePhraseIndex.higher];
-  } else if(currentPct < prevPct){
-    el.innerHTML = COMPARE_PHRASES.lower[comparePhraseIndex.lower];
-  } else {
-    el.innerHTML = COMPARE_PHRASES.equal[comparePhraseIndex.equal];
+
+  if(!prev){
+    strip.style.display = 'none';
+    panel.style.display = 'none';
+    heroBlock.classList.remove('has-strip');
+    return;
   }
+  heroBlock.classList.add('has-strip');
+  strip.style.display = '';
+
+  const prevPct = Math.round((monthScore(prev)/monthMax(prev))*100);
+  const txt = document.getElementById('compareTxt');
+  const verseTxt = document.getElementById('compareVerseTxt');
+
+  if(currentPct > prevPct){
+    txt.textContent = COMPARE_WORDING.higher;
+    verseTxt.innerHTML = COMPARE_PHRASES.higher[comparePhraseIndex.higher];
+  } else if(currentPct < prevPct){
+    txt.textContent = COMPARE_WORDING.lower;
+    verseTxt.innerHTML = COMPARE_PHRASES.lower[comparePhraseIndex.lower];
+  } else {
+    txt.textContent = COMPARE_WORDING.equal;
+    verseTxt.innerHTML = COMPARE_PHRASES.equal[comparePhraseIndex.equal];
+  }
+  // collapse whenever the underlying data changes, so it never shows stale state expanded
+  compareExpanded = false;
+  strip.classList.remove('expanded');
+  panel.style.display = 'none';
+}
+
+/* ---------------- Month subject (badge under the month name) ---------------- */
+function renderSubject(){
+  const month = state.months[state.currentMonth];
+  const el = document.getElementById('heroSubject');
+  const subject = (month.subject || '').trim();
+  if(subject){
+    el.textContent = subject;
+    el.classList.remove('empty');
+  } else {
+    el.textContent = '＋ أضيفي مادة الشهر';
+    el.classList.add('empty');
+  }
+}
+function startEditSubject(){
+  const month = state.months[state.currentMonth];
+  const span = document.getElementById('heroSubject');
+  const input = document.getElementById('heroSubjectInput');
+  span.style.display = 'none';
+  input.style.display = '';
+  input.value = month.subject || '';
+  input.focus();
+  input.select();
+}
+function saveSubject(){
+  const month = state.months[state.currentMonth];
+  const input = document.getElementById('heroSubjectInput');
+  const span = document.getElementById('heroSubject');
+  month.subject = input.value.trim();
+  saveData();
+  renderSubject();
+  input.style.display = 'none';
+  span.style.display = '';
 }
 function renderHero(){
   const month = state.months[state.currentMonth];
@@ -1155,6 +1291,7 @@ function renderHero(){
   document.getElementById('heroMonthLabel').textContent = month.name;
   document.getElementById('heroNum').innerHTML = Math.round(score) + ' <span>/ ' + max + ' نقطة</span>';
   document.getElementById('heroPct').textContent = pct+'%';
+  renderSubject();
   renderCompare(pct);
   const circumference = 289;
   const offset = circumference - (circumference*Math.min(pct,100)/100);
@@ -1628,10 +1765,15 @@ function renderTasks(){
     card.className = 'kanban-card';
     card.draggable = true;
     card.dataset.id = task.id;
-    card.innerHTML = `<span class="task-text"></span><button class="task-del" onclick="deleteTask('${task.id}')">✕</button>`;
+    card.innerHTML = `<span class="drag-handle" draggable="false">⋮⋮</span><span class="task-text"></span><button class="task-del" onclick="deleteTask('${task.id}')">✕</button>`;
     card.querySelector('.task-text').textContent = task.text;
+    // Desktop mouse dragging — unchanged, works from anywhere on the card.
     card.addEventListener('dragstart', (e)=>{ draggedTaskId = task.id; card.classList.add('dragging'); });
     card.addEventListener('dragend', ()=>{ card.classList.remove('dragging'); });
+    // Touch dragging via the small handle — Pointer Events unify mouse/touch/pen,
+    // and since the handle itself has draggable="false", it won't trigger the
+    // native HTML5 drag above, so the two mechanisms never conflict.
+    attachHandleDrag(card, task);
     cols[task.status].appendChild(card);
   });
 
@@ -1654,11 +1796,74 @@ function renderTasks(){
   });
 }
 
+/* ---------------- Touch-friendly drag via the card's handle (Pointer Events) ---------------- */
+function attachHandleDrag(card, task){
+  const handle = card.querySelector('.drag-handle');
+  if(!handle) return;
+  let clone = null, startX = 0, startY = 0, hoveredCol = null, dragging = false;
+
+  handle.addEventListener('dragstart', (e)=> e.preventDefault());
+
+  handle.addEventListener('pointerdown', (e)=>{
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    dragging = true;
+    startX = e.clientX; startY = e.clientY;
+    const rect = card.getBoundingClientRect();
+    clone = card.cloneNode(true);
+    clone.classList.add('touch-drag-clone');
+    clone.style.width = rect.width + 'px';
+    clone.style.left = rect.left + 'px';
+    clone.style.top = rect.top + 'px';
+    document.body.appendChild(clone);
+    card.classList.add('dragging');
+    handle.setPointerCapture(e.pointerId);
+  });
+
+  handle.addEventListener('pointermove', (e)=>{
+    if(!dragging || !clone) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    clone.style.transform = `translate(${dx}px, ${dy}px)`;
+
+    hoveredCol = null;
+    document.querySelectorAll('.kanban-list').forEach(col=>{
+      const r = col.getBoundingClientRect();
+      const over = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+      col.classList.toggle('drag-over', over);
+      if(over) hoveredCol = col;
+    });
+  });
+
+  function finishDrag(e){
+    if(!dragging) return;
+    dragging = false;
+    if(clone){ clone.remove(); clone = null; }
+    card.classList.remove('dragging');
+    document.querySelectorAll('.kanban-list').forEach(col=> col.classList.remove('drag-over'));
+    if(hoveredCol){
+      const status = hoveredCol.dataset.status;
+      const t = state.tasks.find(t=>t.id===task.id);
+      if(t && t.status !== status){ t.status = status; saveData(); }
+    }
+    hoveredCol = null;
+    renderTasks();
+  }
+  handle.addEventListener('pointerup', finishDrag);
+  handle.addEventListener('pointercancel', finishDrag);
+}
+
 /* ---------------- Focus timer + star sky ---------------- */
+/* Timestamp-based: we store the real start/target end time (ms since epoch)
+   instead of relying on a ticking counter. That way, if the browser freezes
+   this tab (screen lock, switching apps, backgrounding), the timer corrects
+   itself the instant the page becomes visible again, by comparing against
+   the real clock rather than counted ticks. */
 let focusDuration = 25;      // minutes
-let focusRemaining = 25*60;  // seconds
+let focusRemaining = 25*60;  // seconds (derived/display value)
 let focusTimerId = null;
 let focusRunning = false;
+let focusEndAt = null;       // ms epoch timestamp when the session should end
+const FOCUS_STATE_KEY = 'mirqah_focus_state';
 const FOCUS_CIRCUMFERENCE = 628;
 
 function fmtTime(totalSec){
@@ -1686,22 +1891,38 @@ function toggleFocus(){
   if(focusRunning) return;
   startFocus();
 }
+function persistFocusState(){
+  if(focusRunning){
+    localStorage.setItem(FOCUS_STATE_KEY, JSON.stringify({ endAt: focusEndAt, duration: focusDuration }));
+  } else {
+    localStorage.removeItem(FOCUS_STATE_KEY);
+  }
+}
 function startFocus(){
   focusRunning = true;
+  focusEndAt = Date.now() + focusDuration*60*1000;
+  persistFocusState();
   document.getElementById('focusState').textContent = 'في تركيزٍ عميق…';
   document.getElementById('focusMainBtn').style.display = 'none';
   document.getElementById('focusCancelBtn').style.display = '';
   document.querySelectorAll('.dur-btn').forEach(b=> b.disabled = true);
 
-  focusTimerId = setInterval(()=>{
-    focusRemaining--;
-    updateFocusDisplay();
-    if(focusRemaining <= 0) completeFocus();
-  }, 1000);
+  clearInterval(focusTimerId);
+  focusTimerId = setInterval(focusTick, 1000);
+  focusTick(); // update immediately, don't wait a full second
+}
+function focusTick(){
+  if(!focusRunning) return;
+  const remainingMs = focusEndAt - Date.now();
+  focusRemaining = Math.max(0, Math.round(remainingMs/1000));
+  updateFocusDisplay();
+  if(remainingMs <= 0) completeFocus();
 }
 function cancelFocus(){
   clearInterval(focusTimerId);
   focusRunning = false;
+  focusEndAt = null;
+  persistFocusState();
   focusRemaining = focusDuration*60;
   document.getElementById('focusState').textContent = '';
   document.getElementById('focusMainBtn').style.display = '';
@@ -1713,6 +1934,8 @@ function cancelFocus(){
 function completeFocus(){
   clearInterval(focusTimerId);
   focusRunning = false;
+  focusEndAt = null;
+  persistFocusState();
   state.focusSessions.push({
     id: 'f'+Date.now(),
     minutes: focusDuration,
@@ -1728,6 +1951,50 @@ function completeFocus(){
   updateFocusDisplay();
   renderSky();
 }
+function restoreFocusState(){
+  let saved;
+  try{ saved = JSON.parse(localStorage.getItem(FOCUS_STATE_KEY)); }catch(e){ saved = null; }
+  if(!saved || !saved.endAt) return;
+
+  const remainingMs = saved.endAt - Date.now();
+  if(remainingMs <= 0){
+    // the session finished while the app was closed/backgrounded — still award it
+    focusDuration = saved.duration;
+    localStorage.removeItem(FOCUS_STATE_KEY);
+    state.focusSessions.push({
+      id: 'f'+Date.now(),
+      minutes: focusDuration,
+      date: todayMidnight().toISOString().slice(0,10)
+    });
+    saveData();
+    focusRemaining = focusDuration*60;
+    updateFocusDisplay();
+    renderSky();
+    return;
+  }
+  // resume the running session exactly where it should be
+  focusDuration = saved.duration;
+  focusEndAt = saved.endAt;
+  focusRunning = true;
+  document.querySelectorAll('.dur-btn').forEach(b=>{
+    b.classList.toggle('active', parseInt(b.textContent,10) === focusDuration);
+    b.disabled = true;
+  });
+  document.getElementById('focusState').textContent = 'في تركيزٍ عميق…';
+  document.getElementById('focusMainBtn').style.display = 'none';
+  document.getElementById('focusCancelBtn').style.display = '';
+  clearInterval(focusTimerId);
+  focusTimerId = setInterval(focusTick, 1000);
+  focusTick();
+}
+// Recompute instantly whenever the tab regains visibility/focus — this is
+// what makes the timer feel "always correct" even after long backgrounding.
+document.addEventListener('visibilitychange', ()=>{
+  if(!document.hidden && focusRunning) focusTick();
+});
+window.addEventListener('focus', ()=>{
+  if(focusRunning) focusTick();
+});
 function renderSky(){
   const sessions = state.focusSessions;
   const totalMins = sessions.reduce((s,x)=> s + x.minutes, 0);
@@ -1759,6 +2026,7 @@ function renderSky(){
   });
 }
 updateFocusDisplay();
+restoreFocusState();
 
 /* ---------------- PWA service worker ---------------- */
 if ('serviceWorker' in navigator) {
