@@ -1,4 +1,4 @@
-const CACHE = 'mirqah-v1';
+const CACHE = 'mirqah-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -23,14 +23,29 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  const isPage = e.request.mode === 'navigate' ||
+    e.request.url.endsWith('/') || e.request.url.endsWith('.html');
+
+  if (isPage) {
+    // الشبكة أولًا للصفحة: أحدث نسخة دائمًا، والمحفوظ عند انقطاع النت فقط
+    e.respondWith(
+      fetch(e.request, { cache: 'no-store' }).then(res => {
+        const copy = res.clone();
+        caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
+        return res;
+      }).catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')))
+    );
+    return;
+  }
+
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(res => {
         const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copy)).catch(()=>{});
+        caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
         return res;
-      }).catch(() => cached);
+      });
     })
   );
 });
